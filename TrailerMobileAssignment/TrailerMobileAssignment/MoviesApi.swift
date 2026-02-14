@@ -7,18 +7,48 @@
 
 import Foundation
 
-struct Movie: Codable {
+struct Movie: Decodable, Hashable {
     let id: Int
-    let posterPath: String
     let title: String
-    
+    let overview: String?
+    let posterPath: String
+    let releaseDate: String?
+    let voteAverage: Double?
+
     enum CodingKeys: String, CodingKey {
-        case id, title
+        case id, title, overview
         case posterPath = "poster_path"
+        case releaseDate = "release_date"
+        case voteAverage = "vote_average"
     }
-    
+
     var posterURL: URL? {
-        return URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
+        URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
+    }
+
+    var ratingText: String {
+        guard let voteAverage else { return "—" }
+        return String(format: "%.1f", voteAverage)
+    }
+}
+
+extension Movie {
+    var releaseDateText: String {
+        guard let releaseDate, !releaseDate.isEmpty else { return "—" }
+
+        let parser = DateFormatter()
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.dateFormat = "yyyy-MM-dd"
+
+        guard let date = parser.date(from: releaseDate) else {
+            return releaseDate // fallback: show raw string
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium   // Jan 7, 2026
+        formatter.timeStyle = .none
+
+        return formatter.string(from: date)
     }
 }
 

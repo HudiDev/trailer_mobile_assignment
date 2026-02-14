@@ -11,32 +11,22 @@ import SwiftUI
 struct PosterCell: View {
     let url: URL?
     let title: String
-
+    
     var body: some View {
         AsyncImage(url: url) { phase in
             switch phase {
             case .empty:
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(.thinMaterial)
-                    ProgressView()
-                }
-
+                ZStack { RoundedRectangle(cornerRadius: 12).fill(.thinMaterial); ProgressView() }
             case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFill()
-
+                image.resizable().scaledToFill()
             case .failure:
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(.thinMaterial)
-                    Image(systemName: self.title)
+                    Image(systemName: "film")
                 }
-
             @unknown default:
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(.thinMaterial)
+                RoundedRectangle(cornerRadius: 12).fill(.thinMaterial)
             }
         }
         .frame(height: 220)

@@ -28,13 +28,19 @@ struct ContentView: View {
                     
                     LazyVGrid(columns: self.columns, spacing: 10) {
                         ForEach(movies, id: \.id) { movie in
-                            PosterCell(url: movie.posterURL, title: movie.title)
+                            NavigationLink(value: movie) {
+                                PosterCell(url: movie.posterURL, title: movie.title)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
                 .padding()
             }
             .navigationTitle("Movies")
+            .navigationDestination(for: Movie.self) { movie in
+                MovieDetailView(movie: movie)
+            }
         }
         .task {
             do {
