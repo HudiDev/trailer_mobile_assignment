@@ -13,18 +13,23 @@ struct ContentView: View {
     @State private var movies: [Movie] = []
     @State private var errorText: String?
     
+    private let columns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10),
+    ]
+    
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    ForEach(self.movies, id: \.id) { movie in
-                        Text(movie.title)
-                            .font(.headline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 12)
-                            .background(.thinMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    if let errorText {
+                        Text(errorText).foregroundStyle(.red)
+                    }
+                    
+                    LazyVGrid(columns: self.columns, spacing: 10) {
+                        ForEach(movies, id: \.id) { movie in
+                            PosterCell(url: movie.posterURL, title: movie.title)
+                        }
                     }
                 }
                 .padding()
