@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct TrailerMobileAssignmentApp: App {
+    @StateObject private var likes = LikesStore()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(likes)
         }
     }
 }

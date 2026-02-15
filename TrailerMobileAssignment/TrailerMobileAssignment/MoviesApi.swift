@@ -7,25 +7,25 @@
 
 import Foundation
 
-struct Movie: Decodable, Hashable {
+struct Movie: Codable, Hashable {
     let id: Int
     let title: String
     let overview: String?
     let posterPath: String
     let releaseDate: String?
     let voteAverage: Double?
-
+    
     enum CodingKeys: String, CodingKey {
         case id, title, overview
         case posterPath = "poster_path"
         case releaseDate = "release_date"
         case voteAverage = "vote_average"
     }
-
+    
     var posterURL: URL? {
         URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
     }
-
+    
     var ratingText: String {
         guard let voteAverage else { return "—" }
         return String(format: "%.1f", voteAverage)
@@ -35,24 +35,24 @@ struct Movie: Decodable, Hashable {
 extension Movie {
     var releaseDateText: String {
         guard let releaseDate, !releaseDate.isEmpty else { return "—" }
-
+        
         let parser = DateFormatter()
         parser.locale = Locale(identifier: "en_US_POSIX")
         parser.dateFormat = "yyyy-MM-dd"
-
+        
         guard let date = parser.date(from: releaseDate) else {
-            return releaseDate // fallback: show raw string
+            return releaseDate
         }
-
+        
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium   // Jan 7, 2026
+        formatter.dateStyle = .medium
         formatter.timeStyle = .none
-
+        
         return formatter.string(from: date)
     }
 }
 
-struct MoviesResponse: Decodable {
+struct MoviesResponse: Codable {
     let page: Int
     let results: [Movie]
     let totalPages: Int
@@ -67,14 +67,14 @@ enum MovieCategory: String, CaseIterable, Identifiable {
     case nowPlaying = "Now Playing"
     case upcoming = "Upcoming"
     case topRated = "Top Rated"
-
+    
     var id: String { rawValue }
-
+    
     var path: String {
         switch self {
         case .nowPlaying: return "now_playing"
-        case .upcoming:   return "upcoming"
-        case .topRated:   return "top_rated"
+        case .upcoming: return "upcoming"
+        case .topRated: return "top_rated"
         }
     }
 }

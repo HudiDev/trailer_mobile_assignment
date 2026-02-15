@@ -9,6 +9,8 @@
 import SwiftUI
 
 struct MovieDetailView: View {
+    @EnvironmentObject var likes: LikesStore
+    
     let movie: Movie
 
     var body: some View {
@@ -53,5 +55,14 @@ struct MovieDetailView: View {
         }
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    likes.toggle(movie: movie)
+                } label: {
+                    Image(systemName: likes.isLiked(movie.id) ? "heart.fill" : "heart")
+                }
+            }
+        }
     }
 }
