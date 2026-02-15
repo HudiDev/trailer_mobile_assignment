@@ -63,8 +63,24 @@ struct MoviesResponse: Decodable {
     }
 }
 
-func fetchNowPlaying(page: Int = 1) async throws -> MoviesResponse {
-    var components = URLComponents(string: "https://api.themoviedb.org/3/movie/now_playing")!
+enum MovieCategory: String, CaseIterable, Identifiable {
+    case nowPlaying = "Now Playing"
+    case upcoming = "Upcoming"
+    case topRated = "Top Rated"
+
+    var id: String { rawValue }
+
+    var path: String {
+        switch self {
+        case .nowPlaying: return "now_playing"
+        case .upcoming:   return "upcoming"
+        case .topRated:   return "top_rated"
+        }
+    }
+}
+
+func fetchNowPlaying(category: MovieCategory, page: Int = 1) async throws -> MoviesResponse {
+    var components = URLComponents(string: "https://api.themoviedb.org/3/movie/\(category.path)")!
     components.queryItems = [
         URLQueryItem(name: "language", value: "en-US"),
         URLQueryItem(name: "page", value: String(page))

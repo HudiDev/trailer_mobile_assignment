@@ -17,6 +17,10 @@ struct ContentView: View {
     @State private var totalPages = 1
     @State private var isLoadingNextPage = false
     
+    @State private var selectedCategory: MovieCategory = .nowPlaying
+    
+    @State private var title: String = "\(MovieCategory.nowPlaying.rawValue) Movies"
+    
     private let columns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10),
@@ -43,19 +47,40 @@ struct ContentView: View {
                             .buttonStyle(.plain)
                         }
                     }
+                    if isLoadingNextPage {
+                        ProgressView().padding(.vertical, 16)
+                    }
                 }
                 .padding()
             }
-            .navigationTitle("Movies")
+            .navigationTitle(self.title)
             .navigationDestination(for: Movie.self) { movie in
                 MovieDetailView(movie: movie)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Picker("Category", selection: $selectedCategory) {
+                            ForEach(MovieCategory.allCases) { cat in
+                                Text(cat.rawValue).tag(cat)
+                            }
+                        }
+                    } label: {
+                        Label("Category", systemImage: "line.3.horizontal.decrease.circle")
+                    }
+                }
             }
         }
         .task {
             await loadNextPageIfNeeded(forceFirstPage: true)
         }
-        if isLoadingNextPage {
-            ProgressView().padding(.vertical, 16)
+        .onChange(of: selectedCategory) { _, _ in
+            // reset paging state + reload first page
+            movies = []
+            currentPage = 0
+            totalPages = 1
+            Task { await loadNextPageIfNeeded(forceFirstPage: true) }
+            self.title = "\(selectedCategory.rawValue) Movies"
         }
     }
 }
@@ -71,7 +96,7 @@ extension ContentView {
         
         do {
             let nextPage = forceFirstPage ? 1 : (self.currentPage + 1)
-            let response = try await fetchNowPlaying(page: nextPage)
+            let response = try await fetchNowPlaying(category: self.selectedCategory, page: nextPage)
             
             self.currentPage = response.page
             self.totalPages = response.totalPages
