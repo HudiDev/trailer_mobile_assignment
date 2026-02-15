@@ -7,8 +7,14 @@
 
 import SwiftUI
 
+enum TopTab: String, CaseIterable, Identifiable {
+    case movies = "Movies"
+    case favorites = "Favorites"
+    var id: String { rawValue }
+}
 
 struct ContentView: View {
+    @EnvironmentObject private var likes: LikesStore
     
     @State private var movies: [Movie] = []
     @State private var errorText: String?
@@ -18,27 +24,43 @@ struct ContentView: View {
     @State private var isLoadingNextPage = false
     
     @State private var selectedCategory: MovieCategory = .nowPlaying
+    @State private var selectedTab: TopTab = .movies
     
-    @State private var title: String = "\(MovieCategory.nowPlaying.rawValue) Movies"
     
     private let columns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10),
     ]
     
+    private var displayedMovies: [Movie] {
+        self.selectedTab == .movies ? movies : likes.likedMovies
+    }
+    
+    private var displayedTitle: String {
+        "\(self.selectedTab == .movies ? selectedCategory.rawValue : "Favorite") Movies"
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
+                    Picker("", selection: $selectedTab) {
+                        ForEach(TopTab.allCases) { tab in
+                            Text(tab.rawValue).tag(tab)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    
                     if let errorText {
                         Text(errorText).foregroundStyle(.red)
                     }
                     
                     LazyVGrid(columns: self.columns, spacing: 10) {
-                        ForEach(movies, id: \.id) { movie in
+                        ForEach(self.displayedMovies, id: \.id) { movie in
                             NavigationLink(value: movie) {
                                 PosterCell(url: movie.posterURL, title: movie.title)
                                     .onAppear {
+                                        guard selectedTab == .movies else { return }
                                         if movie.id == movies.last?.id {
                                             Task { await loadNextPageIfNeeded() }
                                         }
@@ -53,20 +75,22 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            .navigationTitle(self.title)
+            .navigationTitle(self.displayedTitle)
             .navigationDestination(for: Movie.self) { movie in
                 MovieDetailView(movie: movie)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Picker("Category", selection: $selectedCategory) {
-                            ForEach(MovieCategory.allCases) { cat in
-                                Text(cat.rawValue).tag(cat)
+                if self.selectedTab == .movies {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            Picker("Category", selection: $selectedCategory) {
+                                ForEach(MovieCategory.allCases) { cat in
+                                    Text(cat.rawValue).tag(cat)
+                                }
                             }
+                        } label: {
+                            Label("Category", systemImage: "line.3.horizontal.decrease.circle")
                         }
-                    } label: {
-                        Label("Category", systemImage: "line.3.horizontal.decrease.circle")
                     }
                 }
             }
@@ -75,12 +99,11 @@ struct ContentView: View {
             await loadNextPageIfNeeded(forceFirstPage: true)
         }
         .onChange(of: selectedCategory) { _, _ in
-            // reset paging state + reload first page
+            guard selectedTab == .movies else { return }
             movies = []
             currentPage = 0
             totalPages = 1
             Task { await loadNextPageIfNeeded(forceFirstPage: true) }
-            self.title = "\(selectedCategory.rawValue) Movies"
         }
     }
 }
@@ -101,12 +124,7 @@ extension ContentView {
             self.currentPage = response.page
             self.totalPages = response.totalPages
             
-            if nextPage == 1 {
-                self.movies = response.results
-            } else {
-                // append next page
-                self.movies.append(contentsOf: response.results)
-            }
+            nextPage == 1 ? self.movies = response.results : self.movies.append(contentsOf: response.results)
         } catch {
             self.errorText = error.localizedDescription
         }
