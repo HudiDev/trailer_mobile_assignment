@@ -18,6 +18,8 @@ class MovieRepository {
         favorite.title = movie.title
         favorite.overview = movie.overview
         favorite.posterPath = movie.posterPath
+        favorite.releaseDate = movie.releaseDate
+        favorite.voteAverage = movie.voteAverage
         favorite.imageData = imageData
         favorite.imageSavedAt = Date()
         

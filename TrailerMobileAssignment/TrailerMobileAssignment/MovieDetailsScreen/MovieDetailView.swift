@@ -13,7 +13,6 @@ struct MovieDetailView: View {
     
     let movie: any Movie
     let data: Data?
-    @State private var isSaving = false
     
     var body: some View {
         ScrollView {
@@ -45,29 +44,5 @@ struct MovieDetailView: View {
         }
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { await toggleFavorite() }
-                } label: {
-                    if isSaving {
-                        ProgressView()
-                    } else {
-                        Image(systemName: favoritesStore.isFavorite(movie) ? "heart.fill" : "heart")
-                    }
-                }
-            }
-        }
-    }
-    
-    private func toggleFavorite() async {
-//        isSaving = true
-//        defer { isSaving = false }
-//        
-//        var imageData: Data? = nil
-//        if !self.favoritesStore.isFavorite(movie), let url = movie.posterURL {
-//            imageData = try? await URLSession.shared.data(from: url).0
-//        }
-//        self.favoritesStore.toggleFavorite(movie, imageData: imageData)
     }
 }
