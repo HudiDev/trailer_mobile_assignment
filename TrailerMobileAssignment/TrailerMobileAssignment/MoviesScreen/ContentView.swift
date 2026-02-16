@@ -14,8 +14,6 @@ enum TopTab: String, CaseIterable, Identifiable {
 }
 
 struct ContentView: View {
-    @EnvironmentObject private var likes: LikesStore
-    
     @State var remoteMovies: [RemoteMovie] = []
     @State var localMovies: [LocalMovie] = []
     
@@ -75,10 +73,10 @@ struct ContentView: View {
             }
             .navigationTitle(self.displayedTitle)
             .navigationDestination(for: RemoteMovie.self) { movie in
-                MovieDetailView(movie: movie)
+                MovieDetailView(movie: movie, data: nil)
             }
             .navigationDestination(for: LocalMovie.self) { movie in
-                MovieDetailView(movie: movie)
+                MovieDetailView(movie: movie, data: movie.imageData)
             }
             .toolbar {
                 if self.selectedTab == .movies {

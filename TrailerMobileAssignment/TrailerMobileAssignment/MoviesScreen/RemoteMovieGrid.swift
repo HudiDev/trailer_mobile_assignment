@@ -22,6 +22,7 @@ struct RemoteMovieGrid: View {
                         }
                     }
             }
+            .id("remote-\(movie.id)")
             .buttonStyle(.plain)
         }
     }

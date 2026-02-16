@@ -16,6 +16,7 @@ struct LocalMovieGrid: View {
             NavigationLink(value: movie) {
                 LocalPosterCell(imageData: movie.imageData, url: movie.posterURL, title: movie.title)
             }
+            .id("local-\(movie.id)")
             .buttonStyle(.plain)
         }
     }

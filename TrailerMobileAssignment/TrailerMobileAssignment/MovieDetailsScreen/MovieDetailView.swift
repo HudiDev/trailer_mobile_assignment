@@ -12,25 +12,14 @@ struct MovieDetailView: View {
     @EnvironmentObject private var favoritesStore: FavoritesStore
     
     let movie: any Movie
+    let data: Data?
     @State private var isSaving = false
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 
-                AsyncImage(url: movie.posterURL) { phase in
-                    switch phase {
-                    case .empty:
-                        ZStack { RoundedRectangle(cornerRadius: 14).fill(.thinMaterial); ProgressView() }
-                    case .success(let image):
-                        image.resizable().scaledToFit()
-                    case .failure:
-                        ZStack { RoundedRectangle(cornerRadius: 14).fill(.thinMaterial); Image(systemName: "film") }
-                    @unknown default:
-                        RoundedRectangle(cornerRadius: 14).fill(.thinMaterial)
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                MultiSourceImage(imageData: self.data, url: self.movie.posterURL)
                 
                 Text(movie.title)
                     .font(.title2)
@@ -76,9 +65,9 @@ struct MovieDetailView: View {
         defer { isSaving = false }
         
         var imageData: Data? = nil
-        if !favoritesStore.isFavorite(movie), let url = movie.posterURL {
+        if !self.favoritesStore.isFavorite(movie), let url = movie.posterURL {
             imageData = try? await URLSession.shared.data(from: url).0
         }
-        favoritesStore.toggleFavorite(movie, imageData: imageData)
+         
     }
 }
