@@ -26,12 +26,18 @@ class FavoritesStore: ObservableObject {
         self.favorites.contains { $0.id == movie.id }
     }
     
-    func toggleFavorite(_ movie: any Movie, imageData: Data?) {
+    func toggleFavorite(_ movie: any Movie, imageData: Data) {
         if let existing = favorites.first(where: { $0.id == movie.id }) {
             self.repository.deleteFavorite(existing)
-        } else if let imageData {
+        } else {
             self.repository.saveFavorite(movie: movie, imageData: imageData)
         }
-        load()  // Refresh the list
+        load()
+    }
+    
+    func removeFavorite(_ movie: any Movie) {
+        guard let existing = favorites.first(where: { $0.id == movie.id }) else { return }
+        self.repository.deleteFavorite(existing)
+        load()
     }
 }

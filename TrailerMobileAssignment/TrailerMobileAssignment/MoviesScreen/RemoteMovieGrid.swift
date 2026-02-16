@@ -15,12 +15,13 @@ struct RemoteMovieGrid: View {
     var body: some View {
         ForEach(self.movies, id: \.id) { movie in
             NavigationLink(value: movie) {
-                RemotePosterCell(url: movie.posterURL)
+                RemotePosterCell(movie: movie)
                     .onAppear {
                         if movie.id == movies.last?.id {
                             self.onLastMovie()
                         }
                     }
+                
             }
             .id("remote-\(movie.id)")
             .buttonStyle(.plain)

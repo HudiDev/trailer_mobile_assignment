@@ -9,12 +9,12 @@ import SwiftUI
 
 
 struct LocalMovieGrid: View {
-    var movies: [LocalMovie] = []
+    @EnvironmentObject private var favoritesStore: FavoritesStore
     
     var body: some View {
-        ForEach(self.movies, id: \.id) { movie in
+        ForEach(self.favoritesStore.favorites, id: \.id) { movie in
             NavigationLink(value: movie) {
-                LocalPosterCell(imageData: movie.imageData, url: movie.posterURL, title: movie.title)
+                LocalPosterCell(movie: movie)
             }
             .id("local-\(movie.id)")
             .buttonStyle(.plain)

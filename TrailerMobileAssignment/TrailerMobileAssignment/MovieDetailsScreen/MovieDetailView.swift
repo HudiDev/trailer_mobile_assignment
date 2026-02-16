@@ -61,13 +61,13 @@ struct MovieDetailView: View {
     }
     
     private func toggleFavorite() async {
-        isSaving = true
-        defer { isSaving = false }
-        
-        var imageData: Data? = nil
-        if !self.favoritesStore.isFavorite(movie), let url = movie.posterURL {
-            imageData = try? await URLSession.shared.data(from: url).0
-        }
-         
+//        isSaving = true
+//        defer { isSaving = false }
+//        
+//        var imageData: Data? = nil
+//        if !self.favoritesStore.isFavorite(movie), let url = movie.posterURL {
+//            imageData = try? await URLSession.shared.data(from: url).0
+//        }
+//        self.favoritesStore.toggleFavorite(movie, imageData: imageData)
     }
 }

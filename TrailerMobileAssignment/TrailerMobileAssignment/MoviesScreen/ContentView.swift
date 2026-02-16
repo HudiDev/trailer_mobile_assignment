@@ -62,7 +62,7 @@ struct ContentView: View {
                                 Task { await loadNextPageIfNeeded() }
                             }
                         case .favorites:
-                            LocalMovieGrid(movies: self.localMovies)
+                            LocalMovieGrid()
                         }
                     }
                     if isLoadingNextPage {
