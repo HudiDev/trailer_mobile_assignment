@@ -9,14 +9,15 @@
 import SwiftUI
 
 struct MovieDetailView: View {
-    @EnvironmentObject var likes: LikesStore
+    @EnvironmentObject private var favoritesStore: FavoritesStore
     
-    let movie: Movie
-
+    let movie: any Movie
+    @State private var isSaving = false
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-
+                
                 AsyncImage(url: movie.posterURL) { phase in
                     switch phase {
                     case .empty:
@@ -30,20 +31,20 @@ struct MovieDetailView: View {
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 14))
-
+                
                 Text(movie.title)
                     .font(.title2)
                     .fontWeight(.semibold)
-
+                
                 HStack(spacing: 12) {
                     Label(movie.releaseDateText, systemImage: "calendar")
                     Label(movie.ratingText, systemImage: "star.fill")
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-
-                if let overview = movie.overview, !overview.isEmpty {
-                    Text(overview)
+                
+                if !movie.overview.isEmpty {
+                    Text(movie.overview)
                         .font(.body)
                         .padding(.top, 4)
                 } else {
@@ -58,11 +59,26 @@ struct MovieDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    likes.toggle(movie: movie)
+                    Task { await toggleFavorite() }
                 } label: {
-                    Image(systemName: likes.isLiked(movie.id) ? "heart.fill" : "heart")
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Image(systemName: favoritesStore.isFavorite(movie) ? "heart.fill" : "heart")
+                    }
                 }
             }
         }
+    }
+    
+    private func toggleFavorite() async {
+        isSaving = true
+        defer { isSaving = false }
+        
+        var imageData: Data? = nil
+        if !favoritesStore.isFavorite(movie), let url = movie.posterURL {
+            imageData = try? await URLSession.shared.data(from: url).0
+        }
+        favoritesStore.toggleFavorite(movie, imageData: imageData)
     }
 }

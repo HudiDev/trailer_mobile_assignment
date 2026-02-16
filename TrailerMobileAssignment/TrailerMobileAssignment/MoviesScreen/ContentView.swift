@@ -16,7 +16,9 @@ enum TopTab: String, CaseIterable, Identifiable {
 struct ContentView: View {
     @EnvironmentObject private var likes: LikesStore
     
-    @State private var movies: [Movie] = []
+    @State var remoteMovies: [RemoteMovie] = []
+    @State var localMovies: [LocalMovie] = []
+    
     @State private var errorText: String?
     
     @State private var currentPage = 0
@@ -26,15 +28,10 @@ struct ContentView: View {
     @State private var selectedCategory: MovieCategory = .nowPlaying
     @State private var selectedTab: TopTab = .movies
     
-    
     private let columns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10),
     ]
-    
-    private var displayedMovies: [Movie] {
-        self.selectedTab == .movies ? movies : likes.likedMovies
-    }
     
     private var displayedTitle: String {
         "\(self.selectedTab == .movies ? selectedCategory.rawValue : "Favorite") Movies"
@@ -49,6 +46,11 @@ struct ContentView: View {
                             Text(tab.rawValue).tag(tab)
                         }
                     }
+                    .onChange(of: selectedTab) { _, newTab in
+                        if newTab == .favorites {
+                            self.localMovies = MovieRepository().fetchFavorites()
+                        }
+                    }
                     .pickerStyle(.segmented)
                     
                     if let errorText {
@@ -56,17 +58,13 @@ struct ContentView: View {
                     }
                     
                     LazyVGrid(columns: self.columns, spacing: 10) {
-                        ForEach(self.displayedMovies, id: \.id) { movie in
-                            NavigationLink(value: movie) {
-                                PosterCell(url: movie.posterURL, title: movie.title)
-                                    .onAppear {
-                                        guard selectedTab == .movies else { return }
-                                        if movie.id == movies.last?.id {
-                                            Task { await loadNextPageIfNeeded() }
-                                        }
-                                    }
+                        switch self.selectedTab {
+                        case .movies:
+                            RemoteMovieGrid(movies: self.remoteMovies) {
+                                Task { await loadNextPageIfNeeded() }
                             }
-                            .buttonStyle(.plain)
+                        case .favorites:
+                            LocalMovieGrid(movies: self.localMovies)
                         }
                     }
                     if isLoadingNextPage {
@@ -76,7 +74,10 @@ struct ContentView: View {
                 .padding()
             }
             .navigationTitle(self.displayedTitle)
-            .navigationDestination(for: Movie.self) { movie in
+            .navigationDestination(for: RemoteMovie.self) { movie in
+                MovieDetailView(movie: movie)
+            }
+            .navigationDestination(for: LocalMovie.self) { movie in
                 MovieDetailView(movie: movie)
             }
             .toolbar {
@@ -100,9 +101,9 @@ struct ContentView: View {
         }
         .onChange(of: selectedCategory) { _, _ in
             guard selectedTab == .movies else { return }
-            movies = []
-            currentPage = 0
-            totalPages = 1
+            self.remoteMovies = []
+            self.currentPage = 0
+            self.totalPages = 1
             Task { await loadNextPageIfNeeded(forceFirstPage: true) }
         }
     }
@@ -124,7 +125,7 @@ extension ContentView {
             self.currentPage = response.page
             self.totalPages = response.totalPages
             
-            nextPage == 1 ? self.movies = response.results : self.movies.append(contentsOf: response.results)
+            nextPage == 1 ? self.remoteMovies = response.results : self.remoteMovies.append(contentsOf: response.results)
         } catch {
             self.errorText = error.localizedDescription
         }

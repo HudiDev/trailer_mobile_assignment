@@ -6,35 +6,28 @@
 //
 
 import Foundation
+import CoreData
 
-struct Movie: Codable, Hashable {
-    let id: Int
-    let title: String
-    let overview: String?
-    let posterPath: String
-    let releaseDate: String?
-    let voteAverage: Double?
-    
-    enum CodingKeys: String, CodingKey {
-        case id, title, overview
-        case posterPath = "poster_path"
-        case releaseDate = "release_date"
-        case voteAverage = "vote_average"
-    }
-    
+protocol Movie {
+    var id: Int { get }
+    var title: String { get }
+    var overview: String { get }
+    var posterPath: String { get }
+    var releaseDate: String { get }
+    var voteAverage: Double { get }
+}
+
+extension Movie {
     var posterURL: URL? {
         URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
     }
     
     var ratingText: String {
-        guard let voteAverage else { return "—" }
-        return String(format: "%.1f", voteAverage)
+        String(format: "%.1f", voteAverage)
     }
-}
-
-extension Movie {
+    
     var releaseDateText: String {
-        guard let releaseDate, !releaseDate.isEmpty else { return "—" }
+        guard !releaseDate.isEmpty else { return "—" }
         
         let parser = DateFormatter()
         parser.locale = Locale(identifier: "en_US_POSIX")
@@ -52,9 +45,36 @@ extension Movie {
     }
 }
 
+struct RemoteMovie: Movie, Codable, Hashable {
+    let id: Int
+    let title: String
+    let overview: String
+    let posterPath: String
+    let releaseDate: String
+    let voteAverage: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case id, title, overview
+        case posterPath = "poster_path"
+        case releaseDate = "release_date"
+        case voteAverage = "vote_average"
+    }
+}
+
+class LocalMovie: NSManagedObject, Movie {
+    @NSManaged var id: Int
+    @NSManaged var title: String
+    @NSManaged var overview: String
+    @NSManaged var posterPath: String
+    @NSManaged var releaseDate: String
+    @NSManaged var voteAverage: Double
+    @NSManaged var imageData: Data?
+    @NSManaged var imageSavedAt: Date
+}
+
 struct MoviesResponse: Codable {
     let page: Int
-    let results: [Movie]
+    let results: [RemoteMovie]
     let totalPages: Int
     
     enum CodingKeys: String, CodingKey {

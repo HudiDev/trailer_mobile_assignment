@@ -1,5 +1,5 @@
 //
-//  PosterCell.swift
+//  RemotePosterCell.swift
 //  TrailerMobileAssignment
 //
 //  Created by Yehuda Ilfeld on 2/14/26.
@@ -8,12 +8,11 @@
 import SwiftUI
 
 
-struct PosterCell: View {
+struct RemotePosterCell: View {
     let url: URL?
-    let title: String
     
     var body: some View {
-        AsyncImage(url: url) { phase in
+        AsyncImage(url: self.url) { phase in
             switch phase {
             case .empty:
                 ZStack { RoundedRectangle(cornerRadius: 12).fill(.thinMaterial); ProgressView() }
