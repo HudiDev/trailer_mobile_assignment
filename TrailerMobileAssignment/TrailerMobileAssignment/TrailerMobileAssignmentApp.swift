@@ -13,7 +13,7 @@ struct TrailerMobileAssignmentApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MoviesView()
                 .environmentObject(favoritesStore)
         }
     }
