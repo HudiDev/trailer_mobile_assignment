@@ -1,5 +1,5 @@
 //
-//  Untitled.swift
+//  PersistenceManager.swift
 //  TrailerMobileAssignment
 //
 //  Created by Yehuda Ilfeld on 2/15/26.
@@ -17,7 +17,8 @@ final class PersistenceManager {
     }
     
     private init() {
-        container = NSPersistentContainer(name: "LocalMovie") // Must match your .xcdatamodeld filename
+        // TODO: - have name in config file
+        container = NSPersistentContainer(name: "LocalMovie")
         container.loadPersistentStores { description, error in
             if let error = error {
                 fatalError("Core Data failed to load: \(error.localizedDescription)")

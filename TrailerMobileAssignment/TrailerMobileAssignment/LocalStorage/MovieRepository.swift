@@ -27,6 +27,7 @@ class MovieRepository {
     }
     
     func fetchFavorites() -> [LocalMovie] {
+        // TODO: - have entityName in config file
         let context = PersistenceManager.shared.context
         let request = NSFetchRequest<LocalMovie>(entityName: "LocalMovie")
         
