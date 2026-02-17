@@ -15,10 +15,12 @@ class FavoritesStore: ObservableObject {
     private let repository = MovieRepository()
     
     init() {
+        self.repository.purgeExpiredImageData()
         self.favorites = self.repository.fetchFavorites()
     }
     
     func load() {
+        self.repository.purgeExpiredImageData()
         self.favorites = self.repository.fetchFavorites()
     }
     

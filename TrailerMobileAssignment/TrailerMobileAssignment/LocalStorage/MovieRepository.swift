@@ -45,3 +45,33 @@ class MovieRepository {
         PersistenceManager.shared.save()
     }
 }
+
+extension MovieRepository {
+
+    func purgeExpiredImageData(olderThan seconds: TimeInterval = 24 * 60 * 60) {
+        let context = PersistenceManager.shared.context
+        let cutoff = Date().addingTimeInterval(-seconds)
+
+        let request = NSBatchUpdateRequest(entityName: "LocalMovie")
+        request.predicate = NSPredicate(format: "imageSavedAt < %@", cutoff as NSDate)
+
+
+        request.propertiesToUpdate = ["imageData": NSNull()]
+
+        // Ensure in-memory objects get refreshed
+        request.resultType = .updatedObjectIDsResultType
+
+        do {
+            let result = try context.execute(request) as? NSBatchUpdateResult
+            let objectIDs = result?.result as? [NSManagedObjectID] ?? []
+            if !objectIDs.isEmpty {
+                NSManagedObjectContext.mergeChanges(
+                    fromRemoteContextSave: [NSUpdatedObjectsKey: objectIDs],
+                    into: [context]
+                )
+            }
+        } catch {
+            print("Purge imageData failed: \(error)")
+        }
+    }
+}
