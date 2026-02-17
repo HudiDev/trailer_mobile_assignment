@@ -6,12 +6,12 @@
 //
 
 import Foundation
-import SwiftUI
+
 
 @MainActor
 final class MoviesViewModel: ObservableObject {
 
-    // UI state
+
     @Published private(set) var remoteMovies: [RemoteMovie] = []
     @Published private(set) var errorText: String?
     @Published private(set) var isLoadingNextPage = false
@@ -19,7 +19,6 @@ final class MoviesViewModel: ObservableObject {
     @Published var selectedCategory: MovieCategory = .nowPlaying
     @Published var selectedTab: TopTab = .movies
 
-    // Paging
     private var currentPage = 0
     private var totalPages = 1
 
